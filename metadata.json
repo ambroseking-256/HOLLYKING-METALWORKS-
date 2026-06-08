@@ -1,0 +1,6 @@
+{
+  "name": "HOLLYKING METALWORKS U.LTD",
+  "description": "Premium industrial metalworks and construction applet featuring a custom portfolio gallery, client project tracker with milestone status and media upload space, and interactive custom quote generation.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
