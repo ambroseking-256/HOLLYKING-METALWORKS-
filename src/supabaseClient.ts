@@ -4,7 +4,24 @@ import { QuoteRequest, UserAccount, ClientProject, ProjectMedia } from './types'
 const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Whether real Supabase credentials are configured. When they are missing,
+// the app runs in offline-first mode (localStorage) instead of crashing.
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!isSupabaseConfigured) {
+  console.warn(
+    '[v0] Supabase env vars (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) are not set. ' +
+      'Running in offline-first mode with localStorage. Remote sync is disabled.'
+  );
+}
+
+// Use harmless placeholder credentials when none are provided so that
+// createClient() does not throw at import time ("supabaseUrl is required").
+// All DB helpers already fail gracefully, so requests simply no-op offline.
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key'
+);
 
 /**
  * Robust Supabase API Integration Helpers
