@@ -4,7 +4,28 @@ import { QuoteRequest, UserAccount, ClientProject, ProjectMedia } from './types'
 const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// When the Supabase env vars are missing, calling createClient('', '') throws
+// "supabaseUrl is required" at module load, which crashes the entire app before
+// React can mount (blank white screen). Since this app is offline-first and every
+// db helper below is wrapped in try/catch, we fall back to a safe stub that throws
+// only when actually used — so those calls are caught and the app keeps working
+// from localStorage instead of crashing on load.
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!isSupabaseConfigured) {
+  console.warn(
+    '[Supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY are not set. ' +
+    'Running in offline mode (localStorage only).'
+  );
+}
+
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : (new Proxy({} as any, {
+      get() {
+        throw new Error('Supabase is not configured (missing env vars).');
+      },
+    }) as ReturnType<typeof createClient>);
 
 /**
  * Robust Supabase API Integration Helpers
